@@ -53,6 +53,9 @@ ngx_timezone_update(void)
 }
 
 
+// They give up parsing time by hand and use libc calls now.
+// The side effect that on linux `localtime` will return the timezone
+// (tm_gmtoff) is used.
 void
 ngx_localtime(time_t s, ngx_tm_t *tm)
 {

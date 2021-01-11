@@ -17,15 +17,15 @@
 typedef struct {
     time_t      sec;     // time_t is in C99, being the # of sec since the epoch
     ngx_uint_t  msec;
-    ngx_int_t   gmtoff;
+    ngx_int_t   gmtoff;  // offset from UTC in # of minutes
 } ngx_time_t;
 
 // called by `main()` at very early stage to call the very first
 // `ngx_time_update()`.
 void ngx_time_init(void);
 
-// update `ngx_cached_time` and all text representations immediately
-// using hardware time
+// update `ngx_cached_time` and all its text representations
+// and `ngx_current_msec` immediately, using kernel time
 void ngx_time_update(void);
 void ngx_time_sigsafe_update(void);
 

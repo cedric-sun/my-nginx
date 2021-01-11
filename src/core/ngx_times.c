@@ -23,9 +23,18 @@ static ngx_msec_t ngx_monotonic_time(time_t sec, ngx_uint_t msec);
 
 #define NGX_TIME_SLOTS   64
 
+// cached time/text tail index, inclusively
 static ngx_uint_t        slot;
+
+// TODO
 static ngx_atomic_t      ngx_time_lock;
 
+// the # of millisecond since system boot
+// On Linux it's a rough number computed from the CLOCK_MONOTONIC_COARSE clock.
+// Or if Non of those `_MONOTONIC` macro are defined, its value fallbacks
+// to the # of milliseconds since the epoch.
+// My assumption is that this is used as a base time point and has
+// no physical meaning.
 volatile ngx_msec_t      ngx_current_msec;
 
 // the global cached time!
@@ -49,6 +58,8 @@ volatile ngx_str_t       ngx_cached_syslog_time;
 static ngx_int_t         cached_gmtoff;
 #endif
 
+// Cyclic buffers for cached time and texts. Latest time is at the tail,
+// and the tail index is `slot`.
 static ngx_time_t        cached_time[NGX_TIME_SLOTS];
 static u_char            cached_err_log_time[NGX_TIME_SLOTS]
                                     [sizeof("1970/09/28 12:00:00")];
@@ -104,14 +115,18 @@ ngx_time_update(void)
 
     ngx_current_msec = ngx_monotonic_time(sec, msec);
 
+    // first test if our last cached_time is too old
     tp = &cached_time[slot];
 
-    if (tp->sec == sec) { // our cached time is not too wrong, give up update.
+    if (tp->sec == sec) {
+        // our cached time is not too wrong, give up update.
         tp->msec = msec;
         ngx_unlock(&ngx_time_lock);
         return;
     }
 
+    // The cached time is too old, need update ...
+    // increase tail index in a cyclic way
     if (slot == NGX_TIME_SLOTS - 1) {
         slot = 0;
     } else {
@@ -119,10 +134,12 @@ ngx_time_update(void)
     }
 
     tp = &cached_time[slot];
+    // now our goal is to update `*tp`
 
     tp->sec = sec;
     tp->msec = msec;
 
+    // fill broken-down time `gmt` by parsing `sec`
     ngx_gmtime(sec, &gmt);
 
 
@@ -133,6 +150,7 @@ ngx_time_update(void)
                        months[gmt.ngx_tm_mon - 1], gmt.ngx_tm_year,
                        gmt.ngx_tm_hour, gmt.ngx_tm_min, gmt.ngx_tm_sec);
 
+    // get the timezone we are in, and put it into `tp->gmtoff`
 #if (NGX_HAVE_GETTIMEZONE)
 
     tp->gmtoff = ngx_gettimezone();
@@ -140,8 +158,14 @@ ngx_time_update(void)
 
 #elif (NGX_HAVE_GMTOFF)
 
+    // Linux build has this branch.
+
+    // glibc manual 21.5.3:
+    // The tm_gmtoff field is derived from BSD and is a GNU library extension;
+    // it is not visible in a strict ISO C environment.
+
     ngx_localtime(sec, &tm);
-    cached_gmtoff = (ngx_int_t) (tm.ngx_tm_gmtoff / 60);
+    cached_gmtoff = (ngx_int_t) (tm.ngx_tm_gmtoff / 60); // offset is in # of minutes
     tp->gmtoff = cached_gmtoff;
 
 #else
@@ -185,10 +209,11 @@ ngx_time_update(void)
                        months[tm.ngx_tm_mon - 1], tm.ngx_tm_mday,
                        tm.ngx_tm_hour, tm.ngx_tm_min, tm.ngx_tm_sec);
 
-    ngx_memory_barrier();
+    ngx_memory_barrier(); // TODO: how does this work?
 
-    ngx_cached_time = tp; // finally, update the global cached time
-    ngx_cached_http_time.data = p0; // and all text representations
+    ngx_cached_time = tp;   // finally, update the global cached time pointer
+                            // pointing to `cached_time[slot]`.
+    ngx_cached_http_time.data = p0;
     ngx_cached_err_log_time.data = p1;
     ngx_cached_http_log_time.data = p2;
     ngx_cached_http_log_iso8601.data = p3;
@@ -198,9 +223,13 @@ ngx_time_update(void)
 }
 
 
+// Get # of milliseconds since the epoch from kernel.
+// When failed, use `sec` and `msec` as fallback.
 static ngx_msec_t
 ngx_monotonic_time(time_t sec, ngx_uint_t msec)
 {
+    // CLOCK_MONOTONIC is in POSIX.
+    // CLOCK_MONOTONIC_COARSE is Linux-specific
 #if (NGX_HAVE_CLOCK_MONOTONIC)
     struct timespec  ts;
 
@@ -329,7 +358,9 @@ ngx_http_cookie_time(u_char *buf, time_t t)
                        tm.ngx_tm_sec);
 }
 
-
+// manually implemented reentrant `gmtime()`.
+// Perhaps because there is only `gmtime()` before C11, which is not
+// reentrant.
 void
 ngx_gmtime(time_t t, ngx_tm_t *tp)
 {

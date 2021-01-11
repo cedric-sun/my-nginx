@@ -748,8 +748,24 @@ ngx_exec_new_binary(ngx_cycle_t *cycle, char *const *argv)
     return pid;
 }
 
-// manually parse CLI flags without libraries ...
-// Result is returned by setting a series of static globals
+/* manually parse CLI flags without libraries ...
+ * Result is returned by setting a series of static globals:
+ *
+        core/nginx.c:
+        static ngx_uint_t   ngx_show_help;
+        static ngx_uint_t   ngx_show_version;
+        static ngx_uint_t   ngx_show_configure;
+        static u_char      *ngx_prefix;
+        static u_char      *ngx_error_log;
+        static u_char      *ngx_conf_file;
+        static u_char      *ngx_conf_params;
+        static char        *ngx_signal;
+
+        core/ngx_cycle.c:
+        ngx_uint_t             ngx_test_config;
+        ngx_uint_t             ngx_dump_config;
+        ngx_uint_t             ngx_quiet_mode;
+*/
 static ngx_int_t
 ngx_get_options(int argc, char *const *argv)
 {

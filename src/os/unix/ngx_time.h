@@ -16,6 +16,9 @@
 typedef ngx_rbtree_key_t      ngx_msec_t;
 typedef ngx_rbtree_key_int_t  ngx_msec_int_t;
 
+// `ngx_tm_t` is the std `struct tm` except that:
+//      1. month field is in [1,12]
+//      2. year field is real calendar year, not relative to 1900.
 typedef struct tm             ngx_tm_t;
 
 #define ngx_tm_sec            tm_sec
