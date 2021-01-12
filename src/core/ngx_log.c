@@ -67,8 +67,11 @@ ngx_module_t  ngx_errlog_module = {
 };
 
 
+// the static global logger for `error.log`
 static ngx_log_t        ngx_log;
+// the abstraction for the underlying file of `ngx_log`
 static ngx_open_file_t  ngx_log_file;
+
 ngx_uint_t              ngx_use_stderr = 1;
 
 
@@ -324,6 +327,8 @@ ngx_log_init(u_char *prefix, u_char *error_log)
     ngx_log.log_level = NGX_LOG_NOTICE;
 
     if (error_log == NULL) {
+        // NGX_ERROR_LOG_PATH defined in `objs/ngx_auto_config.h` upon build
+        // by default is "logs/error.log"
         error_log = (u_char *) NGX_ERROR_LOG_PATH;
     }
 
@@ -331,10 +336,15 @@ ngx_log_init(u_char *prefix, u_char *error_log)
     nlen = ngx_strlen(name);
 
     if (nlen == 0) {
+        // if no -e on CLI, and `--error-log-path` is set to empty when built,
+        // fallback to stderr.
+        // os/unix/ngx_files.h: #define ngx_stderr STDERR_FILENO
         ngx_log_file.fd = ngx_stderr;
         return &ngx_log;
     }
 
+    // now we know `-e` is really on the CLI
+    // So we parse argument `error_log`, i.e. global `ngx_error_log`.
     p = NULL;
 
 #if (NGX_WIN32)

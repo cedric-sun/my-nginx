@@ -231,13 +231,15 @@ main(int argc, char *const *argv)
     ngx_regex_init();
 #endif
 
-    ngx_pid = ngx_getpid();
+    ngx_pid = ngx_getpid(); // macros for POSIX getpid() and getppid()
     ngx_parent = ngx_getppid();
 
     log = ngx_log_init(ngx_prefix, ngx_error_log);
     if (log == NULL) {
         return 1;
     }
+
+    // non-null `log` is always the static global `ngx_log` in ngx_log.c
 
     /* STUB */
 #if (NGX_OPENSSL)

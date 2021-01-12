@@ -14,6 +14,7 @@ ngx_uint_t  ngx_pagesize_shift;
 ngx_uint_t  ngx_cacheline_size;
 
 
+// standard malloc + log
 void *
 ngx_alloc(size_t size, ngx_log_t *log)
 {
@@ -48,6 +49,7 @@ ngx_calloc(size_t size, ngx_log_t *log)
 
 #if (NGX_HAVE_POSIX_MEMALIGN)
 
+// allocate `size` bytes which must start at a multiple of `alignment`.
 void *
 ngx_memalign(size_t alignment, size_t size, ngx_log_t *log)
 {

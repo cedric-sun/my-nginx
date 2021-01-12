@@ -36,7 +36,8 @@ struct ngx_shm_zone_s {
 };
 
 
-/* The nginx context; is typedef-ed to `ngx_cycle_t` in `ngx_core.h`
+/* The nginx context; is 648 bytes (AMD64)
+ * is typedef-ed to `ngx_cycle_t` in `ngx_core.h`;
  * I now assume:
  *      1. Only 1 instance should exist at the same time, and is accessed via
  *              the global `ngx_cycle` (defined in `ngx_cycle.c`)
@@ -149,7 +150,9 @@ ngx_shm_zone_t *ngx_shared_memory_add(ngx_conf_t *cf, ngx_str_t *name,
 void ngx_set_shutdown_timer(ngx_cycle_t *cycle);
 
 
+// the global current cycle
 extern volatile ngx_cycle_t  *ngx_cycle;
+
 extern ngx_array_t            ngx_old_cycles;
 extern ngx_module_t           ngx_core_module;
 extern ngx_uint_t             ngx_test_config;

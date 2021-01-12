@@ -18,7 +18,9 @@ static void ngx_clean_old_cycles(ngx_event_t *ev);
 static void ngx_shutdown_timer_handler(ngx_event_t *ev);
 
 
+// the global current cycle
 volatile ngx_cycle_t  *ngx_cycle;
+
 ngx_array_t            ngx_old_cycles;
 
 static ngx_pool_t     *ngx_temp_pool;
