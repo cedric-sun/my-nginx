@@ -48,7 +48,16 @@ typedef void (*ngx_log_writer_pt) (ngx_log_t *log, ngx_uint_t level,
 
 // typedef-ed to `ngx_log_t` in `ngx_core.h`
 struct ngx_log_s {
+    //                           SSSS       severity
+    //                          C           core
+    //                         A            alloc
+    //                        M             mutex
+    //                       E              event
+    //                      H               http
+    //                     M                mail
+    //                    S                 stream
     ngx_uint_t           log_level;
+
     ngx_open_file_t     *file;
 
     ngx_atomic_uint_t    connection;
@@ -78,6 +87,15 @@ struct ngx_log_s {
 
 /*********************************/
 
+/*
+ * On my linux the followings are defined to 1 in ngx_auto_config.h:
+ *      `NGX_HAVE_C99_VARIADIC_MACROS`
+        `NGX_HAVE_GCC_VARIADIC_MACROS`
+   Thus
+        `NGX_HAVE_VARIADIC_MACROS` is set to 1,
+
+
+ */
 #if (NGX_HAVE_C99_VARIADIC_MACROS)
 
 #define NGX_HAVE_VARIADIC_MACROS  1

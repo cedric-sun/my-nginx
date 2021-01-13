@@ -234,6 +234,10 @@ main(int argc, char *const *argv)
     ngx_pid = ngx_getpid(); // macros for POSIX getpid() and getppid()
     ngx_parent = ngx_getppid();
 
+    // Open a temporary log file for this initialization stage.
+    // We haven't parse the nginx.conf yet, so the fd opened is just temporary,
+    // determined by the CLI flags -p and -e if presented,
+    // or fallback to `configure`-ed if not.
     log = ngx_log_init(ngx_prefix, ngx_error_log);
     if (log == NULL) {
         return 1;

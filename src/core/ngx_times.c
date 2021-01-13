@@ -93,7 +93,8 @@ ngx_time_init(void)
     ngx_time_update();
 }
 
-
+// update `ngx_cached_time` and all its text representations
+// and `ngx_current_msec` immediately, using kernel time
 void
 ngx_time_update(void)
 {

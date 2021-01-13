@@ -316,7 +316,9 @@ ngx_log_errno(u_char *buf, u_char *last, ngx_err_t err)
     return buf;
 }
 
-
+// Set the destination file of the global logger instance `ngx_log`
+//     if prefix is NULL, fallback to `configure`-ed
+//     if error_log is NULL, fallback to `configure`-ed
 ngx_log_t *
 ngx_log_init(u_char *prefix, u_char *error_log)
 {
@@ -326,7 +328,7 @@ ngx_log_init(u_char *prefix, u_char *error_log)
     ngx_log.file = &ngx_log_file;
     ngx_log.log_level = NGX_LOG_NOTICE;
 
-    if (error_log == NULL) {
+    if (error_log == NULL) { // if no -e on CLI, fallback to `configure` default
         // NGX_ERROR_LOG_PATH defined in `objs/ngx_auto_config.h` upon build
         // by default is "logs/error.log"
         error_log = (u_char *) NGX_ERROR_LOG_PATH;
@@ -336,24 +338,26 @@ ngx_log_init(u_char *prefix, u_char *error_log)
     nlen = ngx_strlen(name);
 
     if (nlen == 0) {
-        // if no -e on CLI, and `--error-log-path` is set to empty when built,
+        // fallback failed because `--error-log-path` is set to empty when built,
         // fallback to stderr.
         // os/unix/ngx_files.h: #define ngx_stderr STDERR_FILENO
         ngx_log_file.fd = ngx_stderr;
         return &ngx_log;
     }
 
-    // now we know `-e` is really on the CLI
-    // So we parse argument `error_log`, i.e. global `ngx_error_log`.
+    // we have the effective `error_log` now
     p = NULL;
 
 #if (NGX_WIN32)
     if (name[1] != ':') {
 #else
     if (name[0] != '/') {
+        // if `error_log` is relative, treat it to be relative to prefix,
+        // and convert it to absolute path
 #endif
 
         if (prefix) {
+            // prefix is given on CLI by -p
             plen = ngx_strlen(prefix);
 
         } else {
@@ -383,6 +387,7 @@ ngx_log_init(u_char *prefix, u_char *error_log)
         }
     }
 
+    // ngx_open_file is a macro defined to be the syscall `open`
     ngx_log_file.fd = ngx_open_file(name, NGX_FILE_APPEND,
                                     NGX_FILE_CREATE_OR_OPEN,
                                     NGX_FILE_DEFAULT_ACCESS);
