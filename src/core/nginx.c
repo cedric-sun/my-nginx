@@ -964,19 +964,21 @@ ngx_save_argv(ngx_cycle_t *cycle, int argc, char *const *argv)
     return NGX_OK;
 }
 
-
+// set up several fields in `cycle` by inspecting parsed CLI flags
 static ngx_int_t
 ngx_process_options(ngx_cycle_t *cycle)
 {
     u_char  *p;
     size_t   len;
 
+    // setup `cycle->conf_prefix`, `cycle->prefix` depending on whether we
+    // have -p; TODO: semantics of those fields.
     if (ngx_prefix) {
         len = ngx_strlen(ngx_prefix);
         p = ngx_prefix;
 
+        // ensure `p` ends with '/'
         if (len && !ngx_path_separator(p[len - 1])) {
-            // if ngx_prefix doesn't end with '/', copy it and add '/' to the copy
             p = ngx_pnalloc(cycle->pool, len + 1);
             if (p == NULL) {
                 return NGX_ERROR;
@@ -1016,6 +1018,7 @@ ngx_process_options(ngx_cycle_t *cycle)
 
 #else
 
+        // TODO: why set cycle->conf_prefix here?
 #ifdef NGX_CONF_PREFIX
         ngx_str_set(&cycle->conf_prefix, NGX_CONF_PREFIX);
 #else
@@ -1034,29 +1037,35 @@ ngx_process_options(ngx_cycle_t *cycle)
         ngx_str_set(&cycle->conf_file, NGX_CONF_PATH);
     }
 
+    // ensure `cycle->conf_file` is an absolute path;
+    // if not, prepend with `cycle->prefix`
     if (ngx_conf_full_name(cycle, &cycle->conf_file, 0) != NGX_OK) {
         return NGX_ERROR;
     }
 
+    // strip the trailing /-separated component of `cycle->conf_file`
+    // and put the result in `cycle->conf_prefix`
     for (p = cycle->conf_file.data + cycle->conf_file.len - 1;
          p > cycle->conf_file.data;
          p--)
     {
         if (ngx_path_separator(*p)) {
             cycle->conf_prefix.len = p - cycle->conf_file.data + 1;
-            cycle->conf_prefix.data = cycle->conf_file.data;
+            cycle->conf_prefix.data = cycle->conf_file.data; // sharing the buf
             break;
         }
     }
 
+    // if we have -e, put that path into `cycle->error_log`; otherwise
+    // fallback to `--error-log-path=path` when bulit (default logs/error.log)
     if (ngx_error_log) {
         cycle->error_log.len = ngx_strlen(ngx_error_log);
         cycle->error_log.data = ngx_error_log;
-
     } else {
         ngx_str_set(&cycle->error_log, NGX_ERROR_LOG_PATH);
     }
 
+    // if we have -g, put all its text into `cycle->conf_param`
     if (ngx_conf_params) {
         cycle->conf_param.len = ngx_strlen(ngx_conf_params);
         cycle->conf_param.data = ngx_conf_params;
