@@ -31,6 +31,7 @@ ngx_create_pool(size_t size, ngx_log_t *log)
     p->d.failed = 0;
 
     size = size - sizeof(ngx_pool_t);
+
     p->max = (size < NGX_MAX_ALLOC_FROM_POOL) ? size : NGX_MAX_ALLOC_FROM_POOL;
 
     p->current = p;
@@ -145,6 +146,10 @@ ngx_pnalloc(ngx_pool_t *pool, size_t size)
 }
 
 
+// iterate the d.next linked list and allocate `size` bytes from the first node
+// that has such available space
+// `align` is used as bool and 1 means alignment should start at a multiple of
+// `NGX_ALIGNMENT`
 static ngx_inline void *
 ngx_palloc_small(ngx_pool_t *pool, size_t size, ngx_uint_t align)
 {
@@ -161,6 +166,7 @@ ngx_palloc_small(ngx_pool_t *pool, size_t size, ngx_uint_t align)
         }
 
         if ((size_t) (p->d.end - m) >= size) {
+            // we found the node (TODO: no de-fragmentation?)
             p->d.last = m + size;
 
             return m;
@@ -170,10 +176,14 @@ ngx_palloc_small(ngx_pool_t *pool, size_t size, ngx_uint_t align)
 
     } while (p);
 
+    // we reached the end of the `d.next` linked list and no node was found,
+    // so create a new node.
     return ngx_palloc_block(pool, size);
 }
 
 
+// create a new `d.next` node of the same size as the pool head (including node
+// header), and allocate `size` bytes from this new node.
 static void *
 ngx_palloc_block(ngx_pool_t *pool, size_t size)
 {
@@ -195,11 +205,14 @@ ngx_palloc_block(ngx_pool_t *pool, size_t size)
     new->d.failed = 0;
 
     m += sizeof(ngx_pool_data_t);
+    // on my amd64 linux sizeof(ngx_pool_data_t) is 32,
+    // this aligning should do nothing.
     m = ngx_align_ptr(m, NGX_ALIGNMENT);
     new->d.last = m + size;
 
+    // iterate to the last node
     for (p = pool->current; p->d.next; p = p->d.next) {
-        if (p->d.failed++ > 4) {
+        if (p->d.failed++ > 4) {//TODO: WTF?
             pool->current = p->d.next;
         }
     }

@@ -17,6 +17,11 @@ ngx_atomic_t         *ngx_temp_number = &temp_number;
 ngx_atomic_int_t      ngx_random_number = 123456;
 
 
+// if `name` is an absolute path (starts with /), do nothing and return NGX_OK,
+// otherwise prepend `prefix` to `name` in a pnalloc-ed buffer, and set
+// `name->data` to point to that buffer (and return NGX_OK).
+// Warning: if the prepending happens, the old `name->data` is simply overwritten
+//      without free, assuming it be static memory.
 ngx_int_t
 ngx_get_full_name(ngx_pool_t *pool, ngx_str_t *prefix, ngx_str_t *name)
 {
@@ -49,6 +54,8 @@ ngx_get_full_name(ngx_pool_t *pool, ngx_str_t *prefix, ngx_str_t *name)
     ngx_cpystrn(p, name->data, name->len + 1);
 
     name->len += len;
+    // Warning: the old name->data is simply discarded without free, implying
+    //      that it must be static memory.
     name->data = n;
 
     return NGX_OK;

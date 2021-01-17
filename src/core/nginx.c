@@ -259,6 +259,8 @@ main(int argc, char *const *argv)
     init_cycle.log = log;
     ngx_cycle = &init_cycle;
 
+    // WARNING: `ngx_pagesize` hasn't been initialized at this call and is 0,
+    // NGX_MAX_ALLOC_FROM_POOL expands to `(ngx_pagesize - 1)` = 18446744073709551615
     init_cycle.pool = ngx_create_pool(1024, log);
     if (init_cycle.pool == NULL) {
         return 1;
@@ -917,7 +919,10 @@ ngx_get_options(int argc, char *const *argv)
     return NGX_OK;
 }
 
-
+// ngx_argc = main argc
+// ngx_os_argv = main argv (shallow)
+// ngx_argv = deep copy main argv, and null-terminate.
+// ngx_os_environ = glibc extern environ (shallow).
 static ngx_int_t
 ngx_save_argv(ngx_cycle_t *cycle, int argc, char *const *argv)
 {
@@ -971,6 +976,7 @@ ngx_process_options(ngx_cycle_t *cycle)
         p = ngx_prefix;
 
         if (len && !ngx_path_separator(p[len - 1])) {
+            // if ngx_prefix doesn't end with '/', copy it and add '/' to the copy
             p = ngx_pnalloc(cycle->pool, len + 1);
             if (p == NULL) {
                 return NGX_ERROR;

@@ -47,6 +47,9 @@ ngx_strnlen(u_char *p, size_t n)
 }
 
 
+// copy from `src` to `dst` until the first null byte since `dst`
+// is encountered, or `n` bytes have been copied.
+// Either way, `dst` will always be null-terminated.
 u_char *
 ngx_cpystrn(u_char *dst, u_char *src, size_t n)
 {

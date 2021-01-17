@@ -47,16 +47,23 @@ struct ngx_pool_large_s {
 
 
 typedef struct {
-    u_char               *last;
-    u_char               *end;
-    ngx_pool_t           *next;
+    u_char               *last;  // 1 past the last used byte
+    u_char               *end;   // 1 past the last byte of the memory area
+                                // [last,end) is the available mem
+    ngx_pool_t           *next;     // TODO: why not `ngx_pool_data_t`?
     ngx_uint_t            failed;
 } ngx_pool_data_t;
 
 
 struct ngx_pool_s {
     ngx_pool_data_t       d;
+
+    // the watershed for small/large alloc; is constant after pool creation.
+    // is the smaller one of
+    // 1. effective pool size (ngx_create_pool requested - sizeof(ngx_pool_t))
+    // 2. ngx_pagesize - 1
     size_t                max;
+
     ngx_pool_t           *current;
     ngx_chain_t          *chain;    // the chain specific to this pool
                                     // TODO: Each pool somehow knows a chain, why?

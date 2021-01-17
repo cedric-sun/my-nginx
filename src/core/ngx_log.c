@@ -319,6 +319,8 @@ ngx_log_errno(u_char *buf, u_char *last, ngx_err_t err)
 // Set the destination file of the global logger instance `ngx_log`
 //     if prefix is NULL, fallback to `configure`-ed
 //     if error_log is NULL, fallback to `configure`-ed
+// This always set the log_level of the global logger to NGX_LOG_NOTICE (6),
+//    i.e. accepting NO `NGX_LOG_DEBUG_*`
 ngx_log_t *
 ngx_log_init(u_char *prefix, u_char *error_log)
 {

@@ -883,6 +883,10 @@ ngx_conf_include(ngx_conf_t *cf, ngx_command_t *cmd, void *conf)
 }
 
 
+// if `name` is an absolute path (start with /), do nothing and return NGX_OK
+// otherwise, treat `conf_prefix` as boolean:
+//      0: prepend `cycle->prefix` to name
+//      1: prepend `cycle->conf_prefix` to name
 ngx_int_t
 ngx_conf_full_name(ngx_cycle_t *cycle, ngx_str_t *name, ngx_uint_t conf_prefix)
 {
