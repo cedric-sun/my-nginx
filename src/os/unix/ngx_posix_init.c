@@ -10,7 +10,7 @@
 #include <nginx.h>
 
 
-ngx_int_t   ngx_ncpu;
+ngx_int_t   ngx_ncpu; // # of cores, 8
 ngx_int_t   ngx_max_sockets;
 ngx_uint_t  ngx_inherited_nonblocking;
 ngx_uint_t  ngx_tcp_nodelay_and_tcp_nopush;
@@ -30,7 +30,11 @@ ngx_os_io_t ngx_os_io = {
     0
 };
 
-
+// 1. populate `ngx_linux_kern_ostype`, `ngx_linux_kern_osrelease`, `ngx_os_io`;
+// 2. prepare space for longer argv[0];
+// 3. setup `ngx_pagesize`, `ngx_pagesize_shift`,`ngx_cacheline_size`
+// 4. setup `ngx_ncpu`, `ngx_max_sockets`, `ngx_inherited_nonblocking`
+// 5. srandom seed.
 ngx_int_t
 ngx_os_init(ngx_log_t *log)
 {
@@ -83,7 +87,7 @@ ngx_os_init(ngx_log_t *log)
     ngx_max_sockets = (ngx_int_t) rlmt.rlim_cur;
 
 #if (NGX_HAVE_INHERITED_NONBLOCK || NGX_HAVE_ACCEPT4)
-    ngx_inherited_nonblocking = 1;
+    ngx_inherited_nonblocking = 1; //TODO: what mean?
 #else
     ngx_inherited_nonblocking = 0;
 #endif

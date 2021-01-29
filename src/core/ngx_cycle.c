@@ -65,6 +65,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     tp = ngx_timeofday();
     tp->sec = 0;
 
+    // set cached_time[latest].sec to 0 and never use it again, but grab a new slot, interesting. WTF?
     ngx_time_update();
 
 
@@ -82,10 +83,12 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         return NULL;
     }
 
-    cycle->pool = pool;
-    cycle->log = log;
-    cycle->old_cycle = old_cycle;
+    cycle->pool = pool;     // so cycle->pool contains the cycle instance itself
+    cycle->log = log;   // inherit old log
+    cycle->old_cycle = old_cycle;   // setup old_cycle pointer
 
+    // inherit old `conf_prefix`, `prefix`, `error_log`, `conf_file`, `conf_param`
+    // with 0-terminated-ness preserved.
     cycle->conf_prefix.len = old_cycle->conf_prefix.len;
     cycle->conf_prefix.data = ngx_pstrdup(pool, &old_cycle->conf_prefix);
     if (cycle->conf_prefix.data == NULL) {
@@ -125,7 +128,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         return NULL;
     }
 
-
+    // inherit the # of elements in old `paths` but zero the content
     n = old_cycle->paths.nelts ? old_cycle->paths.nelts : 10;
 
     if (ngx_array_init(&cycle->paths, pool, n, sizeof(ngx_path_t *))
@@ -137,7 +140,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
     ngx_memzero(cycle->paths.elts, n * sizeof(ngx_path_t *));
 
-
+    // init new `config_dump` array and `config_dump_rbtree` rbtree
     if (ngx_array_init(&cycle->config_dump, pool, 1, sizeof(ngx_conf_dump_t))
         != NGX_OK)
     {

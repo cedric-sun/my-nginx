@@ -69,6 +69,7 @@ ngx_cpuid(uint32_t i, uint32_t *buf)
 
 /* auto detect the L2 cache line size of modern and widespread CPUs */
 
+// Precisely determine the `ngx_cacheline_size` by looking at cpuid
 void
 ngx_cpuinfo(void)
 {
@@ -81,7 +82,7 @@ ngx_cpuinfo(void)
     vbuf[3] = 0;
     vbuf[4] = 0;
 
-    ngx_cpuid(0, vbuf);
+    ngx_cpuid(0, vbuf); // get vendor
 
     vendor = (u_char *) &vbuf[1];
 

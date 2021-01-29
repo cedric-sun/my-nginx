@@ -31,6 +31,8 @@ extern char **environ;
 
 static char *ngx_os_argv_last;
 
+// Copy the env var strings to new buffer, and point `environ` to that new buffer.
+// Memory [argv[0], ngx_os_argv_last] is available for longer argv[0] after return.
 ngx_int_t
 ngx_init_setproctitle(ngx_log_t *log)
 {
@@ -48,14 +50,15 @@ ngx_init_setproctitle(ngx_log_t *log)
     if (p == NULL) {
         return NGX_ERROR;
     }
-
+    // `ngx_os_argv` is alias for `argv` of main()
     ngx_os_argv_last = ngx_os_argv[0];
 
     for (i = 0; ngx_os_argv[i]; i++) {
-        if (ngx_os_argv_last == ngx_os_argv[i]) {
+        if (ngx_os_argv_last == ngx_os_argv[i]) { //TODO: can this equality ever fail?
             ngx_os_argv_last = ngx_os_argv[i] + ngx_strlen(ngx_os_argv[i]) + 1;
         }
     }
+    // `ngx_os_argv_last` now point to the very first byte of environ
 
     for (i = 0; environ[i]; i++) {
         if (ngx_os_argv_last == environ[i]) {

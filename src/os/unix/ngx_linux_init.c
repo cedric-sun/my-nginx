@@ -29,7 +29,8 @@ static ngx_os_io_t ngx_linux_io = {
 #endif
 };
 
-
+// populate globals `ngx_linux_kern_ostype` and `ngx_linux_kern_osrelease` using uname;
+// setup `ngx_os_io`.
 ngx_int_t
 ngx_os_specific_init(ngx_log_t *log)
 {
@@ -46,7 +47,7 @@ ngx_os_specific_init(ngx_log_t *log)
     (void) ngx_cpystrn(ngx_linux_kern_osrelease, (u_char *) u.release,
                        sizeof(ngx_linux_kern_osrelease));
 
-    ngx_os_io = ngx_linux_io;
+    ngx_os_io = ngx_linux_io; // ngx_os_io is a global of type `ngx_os_io_t`; this is struct assign (memory copy)
 
     return NGX_OK;
 }

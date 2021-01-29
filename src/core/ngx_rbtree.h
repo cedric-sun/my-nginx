@@ -39,8 +39,8 @@ struct ngx_rbtree_s {
     ngx_rbtree_node_t     *sentinel;
     ngx_rbtree_insert_pt   insert;
 };
-
-
+// tree = `ngx_rbtree_t *`, s = `ngx_rbtree_node_t *`, i = pointer to function
+// `void (*)(ngx_rbtree_node_t *temp, ngx_rbtree_node_t *node, ngx_rbtree_node_t *sentinel)`
 #define ngx_rbtree_init(tree, s, i)                                           \
     ngx_rbtree_sentinel_init(s);                                              \
     (tree)->root = s;                                                         \

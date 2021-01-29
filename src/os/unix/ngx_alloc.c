@@ -8,9 +8,10 @@
 #include <ngx_config.h>
 #include <ngx_core.h>
 
-
-ngx_uint_t  ngx_pagesize;
-ngx_uint_t  ngx_pagesize_shift;
+// those 3 are setup in `ngx_os_init()`
+ngx_uint_t  ngx_pagesize;   // 4096 on my AMD64 linux
+ngx_uint_t  ngx_pagesize_shift;  // # of 0 after 1 in the binary representation of `ngx_pagesize`
+                                 // for `ngx_pagesize=4096` it's 12.
 ngx_uint_t  ngx_cacheline_size;
 
 

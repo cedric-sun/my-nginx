@@ -14,10 +14,10 @@
 
 
 typedef struct {
-    void        *elts;
-    ngx_uint_t   nelts;
-    size_t       size;
-    ngx_uint_t   nalloc;
+    void        *elts;  // content
+    ngx_uint_t   nelts; // # of elements
+    size_t       size;  // size of each element
+    ngx_uint_t   nalloc; // capacity in # of element
     ngx_pool_t  *pool;
 } ngx_array_t;
 
@@ -33,7 +33,7 @@ void *ngx_array_push(ngx_array_t *a);
 // return a pointer to the first slot of those n slots.
 void *ngx_array_push_n(ngx_array_t *a, ngx_uint_t n);
 
-
+// init `array` as empty array of initial capacity `n` elements each of size `size`
 static ngx_inline ngx_int_t
 ngx_array_init(ngx_array_t *array, ngx_pool_t *pool, ngx_uint_t n, size_t size)
 {

@@ -19,7 +19,7 @@ static ngx_uint_t ngx_module_ctx_index(ngx_cycle_t *cycle, ngx_uint_t type,
 
 
 ngx_uint_t         ngx_max_module;
-static ngx_uint_t  ngx_modules_n;
+static ngx_uint_t  ngx_modules_n; // # of static (build time) modules
 
 
 ngx_int_t
@@ -32,7 +32,7 @@ ngx_preinit_modules(void)
         ngx_modules[i]->name = ngx_module_names[i];
     }
 
-    ngx_modules_n = i;
+    ngx_modules_n = i; // does NOT include the terminating NULL
     ngx_max_module = ngx_modules_n + NGX_MAX_DYNAMIC_MODULES;
 
     return NGX_OK;
@@ -46,7 +46,7 @@ ngx_cycle_modules(ngx_cycle_t *cycle)
      * create a list of modules to be used for this cycle,
      * copy static modules to it
      */
-
+    // zero-ed allocation
     cycle->modules = ngx_pcalloc(cycle->pool, (ngx_max_module + 1)
                                               * sizeof(ngx_module_t *));
     if (cycle->modules == NULL) {

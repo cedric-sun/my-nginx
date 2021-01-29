@@ -22,7 +22,7 @@
  */
 
 void
-ngx_timezone_update(void)
+ngx_timezone_update(void) // TODO: this function has no external effect, I guess it let kernel reload timezone config
 {
 #if (NGX_FREEBSD)
 

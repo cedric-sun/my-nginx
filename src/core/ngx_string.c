@@ -47,9 +47,7 @@ ngx_strnlen(u_char *p, size_t n)
 }
 
 
-// copy from `src` to `dst` until the first null byte since `dst`
-// is encountered, or `n` bytes have been copied.
-// Either way, `dst` will always be null-terminated.
+// Equiv to std `strncpy`. `dst` will always be null-terminated.
 u_char *
 ngx_cpystrn(u_char *dst, u_char *src, size_t n)
 {
@@ -73,7 +71,8 @@ ngx_cpystrn(u_char *dst, u_char *src, size_t n)
     return dst;
 }
 
-
+// allocate a buffer of size `src->len` containing a copy of `src->data`
+// WITHOUT the terminating 0 from `pool`
 u_char *
 ngx_pstrdup(ngx_pool_t *pool, ngx_str_t *src)
 {

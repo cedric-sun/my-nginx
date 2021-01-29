@@ -57,6 +57,8 @@ struct ngx_cycle_s {
     ngx_connection_t         *free_connections;
     ngx_uint_t                free_connection_n;
 
+    // array of `ngx_module_t *` (POINTER) of size `modules_n` and max cap `ngx_max_module+1`
+    // its trailing part (modules[modules_n, ngx_max_module]) is zero-ed
     ngx_module_t            **modules;
     ngx_uint_t                modules_n;
     ngx_uint_t                modules_used;    /* unsigned  modules_used:1; */
@@ -66,9 +68,9 @@ struct ngx_cycle_s {
     time_t                    connections_reuse_time;
 
     ngx_array_t               listening; // array of `ngx_listening_t`
-    ngx_array_t               paths;
+    ngx_array_t               paths;  // array of `ngx_path_t *` (POINTER)
 
-    ngx_array_t               config_dump;
+    ngx_array_t               config_dump; // array of `ngx_conf_dump_t`
     ngx_rbtree_t              config_dump_rbtree;
     ngx_rbtree_node_t         config_dump_sentinel;
 
@@ -88,13 +90,20 @@ struct ngx_cycle_s {
 
     ngx_cycle_t              *old_cycle;
 
+    // absolute path to nginx.conf; e.g "/home/cesun/nginx-src/install/conf/nginx.conf"; HAS terminating 0
     ngx_str_t                 conf_file;
-    ngx_str_t                 conf_param;
-    ngx_str_t                 conf_prefix;  //
+
+    ngx_str_t                 conf_param; // NO terminating 0.
+
+    // absolute path of the dir containing `conf_file`; e.g. "/home/cesun/nginx-src/install/conf/".
+    // Shares the same `data` buffer as `conf_file`, but `len` is less. NO terminating 0.
+    ngx_str_t                 conf_prefix;
+
+    // absolute path of the installation dir, e.g. "/home/cesun/nginx-src/install/". NO terminating 0.
     ngx_str_t                 prefix;
-    ngx_str_t                 error_log;
+    ngx_str_t                 error_log; // HAS terminating 0
     ngx_str_t                 lock_file;
-    ngx_str_t                 hostname;
+    ngx_str_t                 hostname; // hostname in lowercase
 };
 
 

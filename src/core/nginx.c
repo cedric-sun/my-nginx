@@ -210,6 +210,7 @@ main(int argc, char *const *argv)
         return 1;
     }
 
+
     if (ngx_get_options(argc, argv) != NGX_OK) {
         return 1;
     }
@@ -971,9 +972,8 @@ ngx_process_options(ngx_cycle_t *cycle)
     u_char  *p;
     size_t   len;
 
-    // setup `cycle->conf_prefix`, `cycle->prefix` depending on whether we
-    // have -p; TODO: semantics of those fields.
-    if (ngx_prefix) {
+    // setup `cycle->conf_prefix`, `cycle->prefix` depending on whether we have -p
+    if (ngx_prefix) { // if we have -p
         len = ngx_strlen(ngx_prefix);
         p = ngx_prefix;
 
@@ -1029,7 +1029,9 @@ ngx_process_options(ngx_cycle_t *cycle)
 #endif
     }
 
-    if (ngx_conf_file) {
+    // now we have `cycle->prefix` that is always absolute, e.g. "/home/cesun/nginx-src/install/"
+
+    if (ngx_conf_file) { // if we have -c
         cycle->conf_file.len = ngx_strlen(ngx_conf_file);
         cycle->conf_file.data = ngx_conf_file;
 

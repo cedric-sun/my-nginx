@@ -4,3 +4,4 @@ CMakeLists.txt
 .hgignore
 .hgtags
 .idea
+objs/

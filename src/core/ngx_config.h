@@ -101,6 +101,7 @@ typedef intptr_t        ngx_flag_t;
 #endif
 
 // starting from d, find the first integer that is a multiple of a, including d itself.
+// a must be a power of 2
 #define ngx_align(d, a)     (((d) + (a - 1)) & ~(a - 1))
 // ditto but for pointer
 #define ngx_align_ptr(p, a)                                                   \
