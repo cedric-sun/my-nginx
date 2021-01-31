@@ -28,7 +28,7 @@ static ngx_command_t  ngx_conf_commands[] = {
       ngx_null_command
 };
 
-
+// the only `NGX_CONF_MODULE`
 ngx_module_t  ngx_conf_module = {
     NGX_MODULE_V1,
     NULL,                                  /* module context */
@@ -58,7 +58,7 @@ static ngx_uint_t argument_number[] = {
     NGX_CONF_TAKE7
 };
 
-
+// do nothing if the cycle associated with `cf` has empty `conf_param`
 char *
 ngx_conf_param(ngx_conf_t *cf)
 {
@@ -218,7 +218,7 @@ ngx_conf_parse(ngx_conf_t *cf, ngx_str_t *filename)
 
         if (ngx_dump_config
 #if (NGX_DEBUG)
-            || 1
+            || 1    // always dump conf conf file to stdout when debugging
 #endif
            )
         {

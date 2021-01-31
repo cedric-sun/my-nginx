@@ -1080,7 +1080,7 @@ ngx_process_options(ngx_cycle_t *cycle)
     return NGX_OK;
 }
 
-
+// allocate a `ngx_core_conf_t` from cycle pool that ... TODO
 static void *
 ngx_core_module_create_conf(ngx_cycle_t *cycle)
 {

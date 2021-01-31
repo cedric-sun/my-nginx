@@ -41,7 +41,7 @@
 
 #define NGX_CONF_ARGS_NUMBER 0x000000ff
 #define NGX_CONF_BLOCK       0x00000100
-#define NGX_CONF_FLAG        0x00000200     // takes a boolean: "on" or "off"
+#define NGX_CONF_FLAG        0x00000200     // takes a boolean: "on" or "off" TODO: what?
 #define NGX_CONF_ANY         0x00000400
 #define NGX_CONF_1MORE       0x00000800
 #define NGX_CONF_2MORE       0x00001000
@@ -125,11 +125,11 @@ typedef char *(*ngx_conf_handler_pt)(ngx_conf_t *cf,
 
 struct ngx_conf_s {
     char                 *name;
-    ngx_array_t          *args;
+    ngx_array_t          *args; // array of `ngx_str_t`
 
-    ngx_cycle_t          *cycle;
+    ngx_cycle_t          *cycle;  // the cycle we this conf is parsed for
     ngx_pool_t           *pool;
-    ngx_pool_t           *temp_pool;
+    ngx_pool_t           *temp_pool;  // a pool that is only used during config file parsing, and will be destroyed after that
     ngx_conf_file_t      *conf_file;
     ngx_log_t            *log;
 

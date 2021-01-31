@@ -71,7 +71,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
     log = old_cycle->log;
 
-    pool = ngx_create_pool(NGX_CYCLE_POOL_SIZE, log);
+    pool = ngx_create_pool(NGX_CYCLE_POOL_SIZE, log); // pool for the new cycle
     if (pool == NULL) {
         return NULL;
     }
@@ -216,7 +216,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
     }
 
     /* on Linux gethostname() silently truncates name that does not fit */
-
+    // setup `cycle->hostname`
     hostname[NGX_MAXHOSTNAMELEN - 1] = '\0';
     cycle->hostname.len = ngx_strlen(hostname);
 
@@ -228,13 +228,13 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
     ngx_strlow(cycle->hostname.data, (u_char *) hostname, cycle->hostname.len);
 
-
+    // copy build-time-configured static-allocated module addresses array into palloc-ed `cycle->modules`
     if (ngx_cycle_modules(cycle) != NGX_OK) {
         ngx_destroy_pool(pool);
         return NULL;
     }
 
-
+    // call `create_conf()` for each `NGX_CORE_MODULE`, and setup `conf_ctx` array
     for (i = 0; cycle->modules[i]; i++) {
         if (cycle->modules[i]->type != NGX_CORE_MODULE) {
             continue;
@@ -255,7 +255,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
 
     senv = environ;
 
-
+    // BEGIN THE EPIC EPIC EPIC EPIC EPIC EPIC CONFIG FILE PARSING
     ngx_memzero(&conf, sizeof(ngx_conf_t));
     /* STUB: init array ? */
     conf.args = ngx_array_create(pool, 10, sizeof(ngx_str_t));
@@ -270,7 +270,7 @@ ngx_init_cycle(ngx_cycle_t *old_cycle)
         return NULL;
     }
 
-
+    //TODO: WTF
     conf.ctx = cycle->conf_ctx;
     conf.cycle = cycle;
     conf.pool = pool;

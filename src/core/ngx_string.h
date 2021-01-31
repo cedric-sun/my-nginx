@@ -225,8 +225,8 @@ uintptr_t ngx_escape_uri(u_char *dst, u_char *src, size_t size,
 void ngx_unescape_uri(u_char **dst, u_char **src, size_t size, ngx_uint_t type);
 uintptr_t ngx_escape_html(u_char *dst, u_char *src, size_t size);
 uintptr_t ngx_escape_json(u_char *dst, u_char *src, size_t size);
-
-
+// this struct starts with `ngx_rbtree_node_t`,
+// so it's possible to cast a `ngx_rbtree_node_t *` to `ngx_str_node_t *`
 typedef struct {
     ngx_rbtree_node_t         node;
     ngx_str_t                 str;
